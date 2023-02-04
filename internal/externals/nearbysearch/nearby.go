@@ -1,4 +1,4 @@
-package main
+package nearbysearch
 
 import (
 	"encoding/json"
@@ -11,14 +11,14 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func CreateLocationRequest(long float64, lat float64, radius float64) string {
+func createLocationRequest(long float64, lat float64, radius float64) string {
 	baseURL := "https://maps.googleapis.com/maps/api/place/nearbysearch/json?"
 	location := fmt.Sprintf("location=%f,%f", long, lat)
 	rad := fmt.Sprintf("radius=%f", radius)
 	return baseURL + location + "&" + rad + "&"
 }
 
-func main() {
+func GetPlaceIDs(long float64, lat float64, radius float64) {
 	err := godotenv.Load("../../'.env")
 	if err != nil {
 		fmt.Println("Error loading .env file")
@@ -29,7 +29,8 @@ func main() {
 	params.Set("key", os.Getenv("API_KEY"))
 
 	// encode the request parameters and append them to the URL
-	apiURL := CreateLocationRequest(43.07256403835086, -89.38788040245322, 100) + params.Encode()
+	// apiURL := createLocationRequest(43.07256403835086, -89.38788040245322, 100) + params.Encode()
+	apiURL := createLocationRequest(long, lat, radius) + params.Encode()
 	fmt.Println(apiURL)
 	resp, err := http.Get(apiURL)
 	if err != nil {

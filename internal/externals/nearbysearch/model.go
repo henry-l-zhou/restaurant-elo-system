@@ -1,4 +1,4 @@
-package main
+package nearbysearch
 
 type Nearby struct {
 	HTMLAttributions []interface{} `json:"html_attributions"`
