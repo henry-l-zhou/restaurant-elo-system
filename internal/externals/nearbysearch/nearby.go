@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-
-	"github.com/joho/godotenv"
 )
 
 func createLocationRequest(long float64, lat float64, radius float64) string {
@@ -18,13 +16,7 @@ func createLocationRequest(long float64, lat float64, radius float64) string {
 	return baseURL + location + "&" + rad + "&"
 }
 
-func GetPlaceIDs(long float64, lat float64, radius float64) {
-	err := godotenv.Load("../../'.env")
-	if err != nil {
-		fmt.Println("Error loading .env file")
-		return
-	}
-
+func GetPlaceIDs(long float64, lat float64, radius float64) (*Nearby, error) {
 	params := url.Values{}
 	params.Set("key", os.Getenv("API_KEY"))
 
@@ -35,14 +27,14 @@ func GetPlaceIDs(long float64, lat float64, radius float64) {
 	resp, err := http.Get(apiURL)
 	if err != nil {
 		fmt.Println("Error making API request:", err)
-		return
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("Error in reading response body")
-		return
+		return nil, err
 	}
 
 	var nearby_data Nearby
@@ -51,5 +43,5 @@ func GetPlaceIDs(long float64, lat float64, radius float64) {
 		fmt.Println("Error in Parsing JSON")
 	}
 
-	fmt.Println(nearby_data)
+	return &nearby_data, nil
 }

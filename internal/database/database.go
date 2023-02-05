@@ -2,16 +2,16 @@ package database
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	_ "github.com/lib/pq"
 )
 
 // DBConn is a database connection instance
-var DBConn *sql.DB
+var DB *sql.DB
 
 // Config is the global database configuration
 var Config DBConfig
@@ -27,8 +27,8 @@ type DBConfig struct {
 
 // Connect opens a database connection
 func Connect(cfg ...DBConfig) *sql.DB {
-	if DBConn != nil {
-		return DBConn
+	if DB != nil {
+		return DB
 	}
 	if len(cfg) > 0 {
 		Config = cfg[0]
@@ -49,23 +49,30 @@ func Connect(cfg ...DBConfig) *sql.DB {
 		Config.Password,
 	)
 	var err error
-	DBConn, err = sql.Open("postgres", connStr)
+	DB, err = sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatalf("Error connecting to the database: %v", err)
 	}
 	fmt.Println("Connected to Database")
-	return DBConn
+	return DB
 }
 
 // WriteJSONData writes JSON data to a database table
-func WriteJSONData(data interface{}, table string) error {
-	DBConn := Connect()
-	jsonData, err := json.Marshal(data)
-	if err != nil {
-		return err
+func WriteJSONData(data []interface{}, table string, columns string) error {
+	// Construct the query string
+	query := fmt.Sprintf("INSERT INTO %s (%s) VALUES (", table, columns)
+	placeholders := make([]string, len(data))
+	for i := range placeholders {
+		placeholders[i] = fmt.Sprintf("$%d", i+1)
 	}
+	query += strings.Join(placeholders, ",") + ")"
 
-	_, err = DBConn.Exec("INSERT INTO "+table+" (data) VALUES ($1)", jsonData)
+	// Print the query and data for debugging purposes
+	fmt.Println("Query: ", query)
+	fmt.Println("Data: ", data)
+
+	// Execute the query
+	_, err := DB.Exec(query, data...)
 	if err != nil {
 		return err
 	}
