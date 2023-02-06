@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
 )
 
 func createLocationRequest(long float64, lat float64, radius float64) string {
@@ -16,14 +15,10 @@ func createLocationRequest(long float64, lat float64, radius float64) string {
 	return baseURL + location + "&" + rad + "&"
 }
 
-func GetPlaceIDs(long float64, lat float64, radius float64) (*Nearby, error) {
-	params := url.Values{}
-	params.Set("key", os.Getenv("API_KEY"))
-
+func GetPlaceIDs(long float64, lat float64, radius float64, place_type string, params url.Values) (*Nearby, error) {
 	// encode the request parameters and append them to the URL
 	// apiURL := createLocationRequest(43.07256403835086, -89.38788040245322, 100) + params.Encode()
 	apiURL := createLocationRequest(long, lat, radius) + params.Encode()
-	fmt.Println(apiURL)
 	resp, err := http.Get(apiURL)
 	if err != nil {
 		fmt.Println("Error making API request:", err)
@@ -41,7 +36,12 @@ func GetPlaceIDs(long float64, lat float64, radius float64) (*Nearby, error) {
 	err = json.Unmarshal(body, &nearby_data)
 	if err != nil {
 		fmt.Println("Error in Parsing JSON")
+		return nil, err
 	}
 
+	if nearby_data.Status == "REQUEST_DENIED" {
+		fmt.Println("Error in authorization to Google API")
+		return nil, err
+	}
 	return &nearby_data, nil
 }

@@ -68,7 +68,6 @@ func WriteJSONData(data []interface{}, table string, columns string) error {
 	query += strings.Join(placeholders, ",") + ")"
 
 	// Print the query and data for debugging purposes
-	fmt.Println("Query: ", query)
 	fmt.Println("Data: ", data)
 
 	// Execute the query
